@@ -1,16 +1,33 @@
 import { useState } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import { useShop } from '../context/ShopContext'
 
 const input = 'w-full px-3 py-2 border border-gray-800'
 
 export default function Login() {
+  const { token, login, api } = useShop()
+  const { state } = useLocation()
   const [mode, setMode] = useState('Login')
+  const [busy, setBusy] = useState(false)
   const isLogin = mode === 'Login'
 
-  const onSubmit = (e) => {
+  if (token) return <Navigate to={state?.from ?? '/'} replace />
+
+  const onSubmit = async (e) => {
     e.preventDefault()
-    // ponytail: auth lands with the Express/MongoDB backend
-    toast.info(`${mode} will be connected once the backend is ready.`)
+    setBusy(true)
+    try {
+      const body = Object.fromEntries(new FormData(e.target))
+      const data = await api(isLogin ? '/user/login' : '/user/register', { body })
+      if (!data.success) return toast.error(data.message)
+      await login(data.token)
+      toast.success(isLogin ? `Welcome back, ${data.name}` : `Welcome, ${data.name}`)
+    } catch {
+      toast.error('Could not reach the server')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -31,13 +48,15 @@ export default function Login() {
         required
       />
       <div className="w-full flex justify-between text-sm -mt-2">
-        <button type="button" className="cursor-pointer">Forgot your password?</button>
+        <button type="button" onClick={() => toast.info('Password reset is not available yet')} className="cursor-pointer">
+          Forgot your password?
+        </button>
         <button type="button" onClick={() => setMode(isLogin ? 'Sign Up' : 'Login')} className="cursor-pointer">
           {isLogin ? 'Create account' : 'Login Here'}
         </button>
       </div>
-      <button type="submit" className="bg-black text-white font-light px-8 py-2 mt-4 cursor-pointer">
-        {isLogin ? 'Sign In' : 'Sign Up'}
+      <button type="submit" disabled={busy} className="bg-black text-white font-light px-8 py-2 mt-4 cursor-pointer disabled:opacity-60">
+        {busy ? 'Please wait…' : isLogin ? 'Sign In' : 'Sign Up'}
       </button>
     </form>
   )

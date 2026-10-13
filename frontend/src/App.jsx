@@ -14,6 +14,7 @@ import Cart from './pages/Cart'
 import Login from './pages/Login'
 import PlaceOrder from './pages/PlaceOrder'
 import Orders from './pages/Orders'
+import Verify from './pages/Verify'
 import NotFound from './pages/NotFound'
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/place-order" element={<PlaceOrder />} />
           <Route path="/orders" element={<Orders />} />
+          <Route path="/verify" element={<Verify />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </main>

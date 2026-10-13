@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Navigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 import { assets } from '../assets/assets'
 import Title from '../components/Title'
 import CartTotal from '../components/CartTotal'
@@ -13,18 +14,73 @@ const METHODS = [
   ['cod', <p key="c" className="text-gray-500 text-sm font-medium mx-4">CASH ON DELIVERY</p>],
 ]
 
+const loadRazorpay = () =>
+  new Promise((resolve, reject) => {
+    if (window.Razorpay) return resolve()
+    const s = document.createElement('script')
+    s.src = 'https://checkout.razorpay.com/v1/checkout.js'
+    s.onload = resolve
+    s.onerror = () => reject(new Error('Could not load Razorpay'))
+    document.body.appendChild(s)
+  })
+
 export default function PlaceOrder() {
-  const { cartLines, placeOrder } = useShop()
+  const { token, api, cartLines, setCartItems, navigate, productsLoading } = useShop()
   const [method, setMethod] = useState('cod')
+  const [busy, setBusy] = useState(false)
   const [placed, setPlaced] = useState(false)
 
-  // placed: placeOrder empties the cart before its navigate to /orders commits
+  if (!token) return <Navigate to="/login" state={{ from: '/place-order' }} replace />
+  if (productsLoading) return <p className="py-24 text-center text-gray-500">Loading…</p>
+  // placed: the cart is emptied before the navigate to /orders commits
   if (cartLines.length === 0 && !placed) return <Navigate to="/cart" replace />
 
-  const onSubmit = (e) => {
-    e.preventDefault()
+  const finish = () => {
     setPlaced(true)
-    placeOrder(Object.fromEntries(new FormData(e.target)), method)
+    setCartItems({})
+    toast.success('Order placed')
+    navigate('/orders')
+  }
+
+  const payWithRazorpay = async ({ order, key }, address) => {
+    await loadRazorpay()
+    new window.Razorpay({
+      key,
+      amount: order.amount,
+      currency: order.currency,
+      name: 'Forever',
+      description: 'Order payment',
+      order_id: order.id,
+      prefill: { name: `${address.firstName} ${address.lastName}`, email: address.email, contact: address.phone },
+      handler: async (response) => {
+        const data = await api('/order/verifyRazorpay', { body: response })
+        if (data.success) finish()
+        else toast.error(data.message)
+      },
+    }).open()
+  }
+
+  const onSubmit = async (e) => {
+    e.preventDefault()
+    const address = Object.fromEntries(new FormData(e.target))
+    const items = cartLines.map(({ _id, size, quantity }) => ({ productId: _id, size, quantity }))
+    setBusy(true)
+    try {
+      if (method === 'cod') {
+        const data = await api('/order/place', { body: { items, address } })
+        return data.success ? finish() : toast.error(data.message)
+      }
+      if (method === 'stripe') {
+        const data = await api('/order/stripe', { body: { items, address } })
+        return data.success ? window.location.assign(data.session_url) : toast.error(data.message)
+      }
+      const data = await api('/order/razorpay', { body: { items, address } })
+      return data.success ? await payWithRazorpay(data, address) : toast.error(data.message)
+    } catch (err) {
+      toast.error(err.message || 'Could not place order')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -74,7 +130,9 @@ export default function PlaceOrder() {
             ))}
           </div>
           <div className="w-full text-end mt-8">
-            <button type="submit" className="bg-black text-white px-16 py-3 text-sm cursor-pointer">PLACE ORDER</button>
+            <button type="submit" disabled={busy} className="bg-black text-white px-16 py-3 text-sm cursor-pointer disabled:opacity-60">
+              {busy ? 'PLACING…' : 'PLACE ORDER'}
+            </button>
           </div>
         </div>
       </div>

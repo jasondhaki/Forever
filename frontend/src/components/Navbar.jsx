@@ -12,7 +12,7 @@ const LINKS = [
 
 export default function Navbar() {
   const [visible, setVisible] = useState(false)
-  const { setShowSearch, getCartCount, navigate } = useShop()
+  const { setShowSearch, getCartCount, navigate, token, logout } = useShop()
   const { pathname } = useLocation()
 
   const openSearch = () => {
@@ -41,16 +41,19 @@ export default function Navbar() {
         </button>
 
         <div className="group relative">
-          <Link to="/login" aria-label="Account">
+          <Link to={token ? '/orders' : '/login'} aria-label={token ? 'Account' : 'Log in'}>
             <img src={assets.profile_icon} className="w-5" alt="" />
           </Link>
-          <div className="group-hover:block hidden absolute right-0 pt-4 z-10">
-            <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded">
-              <Link to="/login" className="hover:text-black">My Profile</Link>
-              <Link to="/orders" className="hover:text-black">Orders</Link>
-              <Link to="/login" className="hover:text-black">Logout</Link>
+          {token && (
+            <div className="group-hover:block group-focus-within:block hidden absolute right-0 pt-4 z-10">
+              <div className="flex flex-col gap-2 w-36 py-3 px-5 bg-slate-100 text-gray-500 rounded">
+                <Link to="/orders" className="hover:text-black">Orders</Link>
+                <button onClick={() => { logout(); navigate('/login') }} className="text-left hover:text-black cursor-pointer">
+                  Logout
+                </button>
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         <Link to="/cart" className="relative" aria-label={`Cart, ${getCartCount()} items`}>

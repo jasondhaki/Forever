@@ -6,13 +6,14 @@ import { useShop } from '../context/ShopContext'
 
 export default function Product() {
   const { productId } = useParams()
-  const { products, currency, addToCart } = useShop()
+  const { products, productsLoading, currency, addToCart } = useShop()
   const product = products.find((p) => p._id === productId)
   const [image, setImage] = useState(null)
   const [size, setSize] = useState('')
   const [tab, setTab] = useState('description')
 
   if (!product) {
+    if (productsLoading) return <p className="py-24 text-center text-gray-500">Loading…</p>
     return (
       <div className="py-20 text-center">
         <p className="text-gray-500 mb-4">Product not found.</p>

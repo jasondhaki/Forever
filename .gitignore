@@ -7,3 +7,4 @@ dist
 # 60MB Figma exports and a duplicate copy of the upload folder - kept local only
 design/*.svg
 design/Forever/
+!.env.example

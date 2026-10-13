@@ -24,7 +24,7 @@ function FilterBox({ title, options, selected, onToggle, show }) {
 }
 
 export default function Collection() {
-  const { products, search, showSearch } = useShop()
+  const { products, productsLoading, search, showSearch } = useShop()
   const [showFilter, setShowFilter] = useState(false)
   const [category, setCategory] = useState([])
   const [subCategory, setSubCategory] = useState([])
@@ -81,7 +81,9 @@ export default function Collection() {
           </select>
         </div>
 
-        {filtered.length ? (
+        {productsLoading ? (
+          <p className="text-gray-500 py-20 text-center">Loading products…</p>
+        ) : filtered.length ? (
           <ProductGrid items={filtered} className="lg:grid-cols-4" />
         ) : (
           <p className="text-gray-500 py-20 text-center">No products match your filters.</p>
