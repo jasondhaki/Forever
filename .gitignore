@@ -1,0 +1,9 @@
+node_modules
+dist
+.env
+.env.*
+.vercel
+.playwright-cli
+# 60MB Figma exports and a duplicate copy of the upload folder - kept local only
+design/*.svg
+design/Forever/

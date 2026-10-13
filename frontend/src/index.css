@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Outfit", sans-serif;
+  --font-prata: "Prata", serif;
+}
+
+a.active hr {
+  display: block;
+}
+
+/* hide number input spinners on mobile only */
+@media (max-width: 640px) {
+  input[type="number"]::-webkit-inner-spin-button,
+  input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+}
