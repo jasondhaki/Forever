@@ -87,6 +87,17 @@ test('shopping flow', async () => {
   assert.equal((await call('/order/status', { token: admin, body: { orderId: placed.orderId, status: 'Shipped' } })).success, true)
   assert.equal((await call('/order/user', { token })).orders[0].status, 'Shipped')
 
+  // image upload token endpoint
+  const blobBody = (pathname) => ({ type: 'blob.generate-client-token', payload: { pathname, callbackUrl: '', clientPayload: null, multipart: false } })
+  assert.equal((await call('/upload', { token, body: blobBody('products/a.png') })).status, 401, 'users cannot upload')
+  assert.equal((await call('/upload', { token: admin, body: blobBody('products/a.png') })).status, 503, 'not configured without token')
+  process.env.BLOB_READ_WRITE_TOKEN = 'vercel_blob_rw_teststore_secret123'
+  const up = await call('/upload', { token: admin, body: blobBody('products/a.png') })
+  assert.equal(up.type, 'blob.generate-client-token')
+  assert.ok(up.clientToken?.startsWith('vercel_blob_client_'))
+  assert.equal((await call('/upload', { token: admin, body: blobBody('evil/a.png') })).status, 400, 'path restricted')
+  delete process.env.BLOB_READ_WRITE_TOKEN
+
   const added = await call('/product/add', {
     token: admin,
     body: { name: 'Test Tee', description: 'd', price: 50, image: ['/products/p_img1.png'], category: 'Men', subCategory: 'Topwear', sizes: ['M'] },

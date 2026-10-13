@@ -33,6 +33,7 @@ otherwise use `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `backend/.env`.
 | `POST /api/user/register` · `/login` · `/admin` | — | returns a JWT |
 | `GET /api/product/list` · `/api/product/:id` | — | |
 | `POST /api/product/add` · `/remove` | admin | `image` is an array of URLs |
+| `POST /api/upload` | admin | issues a Vercel Blob client-upload token (browser uploads directly) |
 | `GET` / `PUT /api/cart` | user | `{ cartData: { productId: { size: qty } } }` |
 | `POST /api/order/place` · `/stripe` · `/razorpay` | user | `{ items: [{ productId, size, quantity }], address }` — priced server-side |
 | `POST /api/order/verifyStripe` · `/verifyRazorpay` | user | |
@@ -46,5 +47,8 @@ Send the token as `Authorization: Bearer <token>`.
 1. **Backend** — Root Directory `backend`. Set the variables from `backend/.env.example`
    (`MONGODB_URI`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `FRONTEND_URL`, and payment keys if used).
    In MongoDB Atlas, allow access from `0.0.0.0/0` (Vercel has no fixed IPs). Run `npm run seed` once with the production `MONGODB_URI`.
+   **Image uploads (free on Hobby):** in the Vercel dashboard go to Storage → Create → Blob, pick **public** access,
+   and connect it to the backend project — that adds `BLOB_READ_WRITE_TOKEN`. For local uploads, copy the token into `backend/.env`.
+   Without it, uploads are disabled and the admin can still paste image URLs.
 2. **Frontend** — Root Directory `frontend`. Set `VITE_BACKEND_URL` to the backend URL, then redeploy.
 3. Put the frontend URL into the backend's `FRONTEND_URL` and redeploy the backend.

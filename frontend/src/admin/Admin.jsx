@@ -135,7 +135,7 @@ export default function Admin() {
         <main className="w-[70%] mx-auto ml-[max(5vw,25px)] my-8 text-gray-600 text-base">
           <Routes>
             <Route index element={<Navigate to="/admin/add" replace />} />
-            <Route path="add" element={<AddProduct api={api} />} />
+            <Route path="add" element={<AddProduct api={api} token={token} />} />
             <Route path="list" element={<ProductList api={api} />} />
             <Route path="orders" element={<AdminOrders api={api} />} />
             <Route path="*" element={<Navigate to="/admin/add" replace />} />

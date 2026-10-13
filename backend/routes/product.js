@@ -1,7 +1,9 @@
 import { Router } from 'express'
 import mongoose from 'mongoose'
+import { del } from '@vercel/blob'
 import { Product } from '../models.js'
 import { adminAuth } from '../auth.js'
+import { blobConfigured } from './upload.js'
 
 const router = Router()
 
@@ -34,6 +36,9 @@ router.post('/remove', adminAuth, async (req, res) => {
   const { id } = req.body ?? {}
   const removed = mongoose.isValidObjectId(id) && (await Product.findByIdAndDelete(id))
   if (!removed) return res.status(404).json({ success: false, message: 'Product not found' })
+  // free the uploaded images; a failure here shouldn't fail the removal
+  const blobs = removed.image.filter((u) => /^https:\/\/[^/]+\.blob\.vercel-storage\.com\//.test(u))
+  if (blobs.length && blobConfigured()) await del(blobs).catch((err) => console.error('Blob cleanup failed', err))
   res.json({ success: true, message: 'Product removed' })
 })
 
