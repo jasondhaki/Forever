@@ -16,7 +16,13 @@ const productSchema = new mongoose.Schema(
     name: { type: String, required: true },
     description: { type: String, required: true },
     price: { type: Number, required: true, min: 0 },
-    image: { type: [String], required: true },
+    image: {
+      type: [String],
+      validate: {
+        validator: (v) => v.length > 0 && v.length <= 4 && v.every((u) => /^(https?:\/\/|\/(?!\/))\S+$/.test(u)),
+        message: 'Provide 1-4 image URLs (https://... or /path)',
+      },
+    },
     category: { type: String, required: true, enum: ['Men', 'Women', 'Kids'] },
     subCategory: { type: String, required: true, enum: ['Topwear', 'Bottomwear', 'Winterwear'] },
     sizes: { type: [String], required: true },

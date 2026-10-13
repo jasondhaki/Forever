@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
@@ -17,11 +18,12 @@ import Orders from './pages/Orders'
 import Verify from './pages/Verify'
 import NotFound from './pages/NotFound'
 
-export default function App() {
+// admin is its own chunk — shoppers never download it
+const Admin = lazy(() => import('./admin/Admin'))
+
+function Storefront() {
   return (
     <div className="px-4 sm:px-[5vw] md:px-[7vw] lg:px-[9vw]">
-      <ToastContainer position="top-right" autoClose={2000} />
-      <ScrollToTop />
       <Navbar />
       <SearchBar />
       <main className="min-h-[60vh]">
@@ -41,5 +43,25 @@ export default function App() {
       </main>
       <Footer />
     </div>
+  )
+}
+
+export default function App() {
+  return (
+    <>
+      <ToastContainer position="bottom-right" autoClose={2000} />
+      <ScrollToTop />
+      <Routes>
+        <Route
+          path="/admin/*"
+          element={
+            <Suspense fallback={<p className="py-24 text-center text-gray-500">Loading…</p>}>
+              <Admin />
+            </Suspense>
+          }
+        />
+        <Route path="*" element={<Storefront />} />
+      </Routes>
+    </>
   )
 }

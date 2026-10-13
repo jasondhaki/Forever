@@ -3,6 +3,7 @@
 Fashion storefront: React (Vite + Tailwind CSS) frontend, Express + MongoDB backend.
 
 - `frontend/` — storefront (home, collection with filters/sort/search, product, cart, checkout, orders, login/sign-up, about, contact)
+  plus the admin panel at `/admin` (add / list / remove products, view orders, update order status)
 - `backend/` — REST API: JWT auth, products, per-user cart, orders, Cash on Delivery / Stripe / Razorpay
 - `design/` — page screenshots from the [Figma design](https://www.figma.com/design/TBe3mud1W5e0a5b3WrCcfe/Forever)
 
@@ -19,6 +20,9 @@ npm run dev
 # storefront (separate terminal)
 cd frontend && npm install && npm run dev   # http://localhost:5173
 ```
+
+Admin panel: http://localhost:5173/admin — with `dev:memory` log in as `admin@forever.com` / `admin-pass-123`;
+otherwise use `ADMIN_EMAIL` / `ADMIN_PASSWORD` from `backend/.env`.
 
 `npm test` in `backend/` runs the API end-to-end against an in-memory MongoDB.
 

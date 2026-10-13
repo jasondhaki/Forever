@@ -93,6 +93,10 @@ test('shopping flow', async () => {
   })
   assert.equal(added.status, 201)
   assert.equal((await call('/product/add', { token: admin, body: { name: 'x' } })).status, 400)
+  const bad = { name: 'x', description: 'd', price: 5, category: 'Men', subCategory: 'Topwear', sizes: ['M'] }
+  for (const image of [[], ['javascript:alert(1)'], ['//evil.com/x.png']]) {
+    assert.equal((await call('/product/add', { token: admin, body: { ...bad, image } })).status, 400, `rejects ${image}`)
+  }
   assert.equal((await call('/product/remove', { token: admin, body: { id: added.product._id } })).success, true)
   assert.equal((await call(`/product/${added.product._id}`)).status, 404)
 })
